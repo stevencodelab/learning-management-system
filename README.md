@@ -172,6 +172,17 @@ After seeding, you can login with:
 
 ---
 
+### Responsive
+<div align="center">
+  
+![Login](public/images/screenshot/responsive.png)
+  
+*Modern bottom navigation in responsive mode with glassmorphism design*
+
+</div>
+
+---
+
 ## 🚀 Features in Detail
 
 ### For Students
