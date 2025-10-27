@@ -8,7 +8,7 @@
 
 A comprehensive and modern Learning Management System built with Laravel 12, featuring role-based access control, course management, enrollment tracking, and an intuitive dashboard for students and instructors.
 
-![Smart Edu LMS](images/screenshot/dashboard.png)
+![Smart Edu LMS](public/images/screenshot/dashboard.png)
 
 </div>
 
@@ -146,7 +146,7 @@ After seeding, you can login with:
 ### Dashboard Overview
 <div align="center">
   
-![Dashboard](images/screenshot/dashboard.png)
+![Dashboard](public/images/screenshot/dashboard.png)
   
 *Interactive dashboard with statistics and analytics*
 
@@ -155,7 +155,7 @@ After seeding, you can login with:
 ### Landing Page
 <div align="center">
   
-![Landing Page](images/screenshot/landing.png)
+![Landing Page](public/images/screenshot/landing.png)
   
 *Beautiful landing page with course showcase*
 
@@ -164,7 +164,7 @@ After seeding, you can login with:
 ### Login Page
 <div align="center">
   
-![Login](images/screenshot/login.png)
+![Login](public/images/screenshot/login.png)
   
 *Modern login interface with glassmorphism design*
 
