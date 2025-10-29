@@ -40,13 +40,19 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Calculate overall progress
-        $totalLessons = 0;
-        $completedLessons = 0;
+        // Calculate statistics
+        $totalEnrolledCourses = $enrolledCourses->count();
+        $completedCourses = $user->enrollments()->whereNotNull('completed_at')->count();
+        $activeCourses = $user->enrollments()->whereNull('completed_at')->count();
+        $totalLessons = $enrolledCourses->sum(function($course) {
+            return $course->modules->sum(function($module) {
+                return $module->lessons->count();
+            });
+        });
         
+        $completedLessons = 0;
         foreach ($enrolledCourses as $course) {
             foreach ($course->modules as $module) {
-                $totalLessons += $module->lessons->count();
                 foreach ($module->lessons as $lesson) {
                     $progress = $user->lessonProgress()
                         ->where('lesson_id', $lesson->id)
@@ -60,12 +66,119 @@ class DashboardController extends Controller
         }
 
         $overallProgress = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 0;
+        $completedLessonsCount = $user->lessonProgress()->where('is_completed', true)->count();
+        $inProgressLessons = $user->lessonProgress()->where('is_completed', false)->count();
+        
+        // Quiz statistics
+        $totalQuizAttempts = $user->quizAttempts()->count();
+        
+        // Calculate passed/failed quizzes - use is_passed if available, otherwise calculate
+        $submittedAttempts = $user->quizAttempts()->where('submitted', true)->with('quiz')->get();
+        
+        $passedQuizzes = 0;
+        $failedQuizzes = 0;
+        
+        foreach ($submittedAttempts as $attempt) {
+            if (isset($attempt->is_passed)) {
+                // Use is_passed column if available
+                if ($attempt->is_passed) {
+                    $passedQuizzes++;
+                } else {
+                    $failedQuizzes++;
+                }
+            } elseif ($attempt->quiz) {
+                // Fallback: calculate based on percentage
+                $percentage = $attempt->score_percentage;
+                if ($percentage >= $attempt->quiz->passing_score) {
+                    $passedQuizzes++;
+                } else {
+                    $failedQuizzes++;
+                }
+            }
+        }
+        
+        // Calculate average score
+        $averageScore = 0;
+        if ($submittedAttempts->count() > 0) {
+            $totalPercentage = $submittedAttempts->sum(function($attempt) {
+                return $attempt->score_percentage ?? 0;
+            });
+            $averageScore = $totalPercentage / $submittedAttempts->count();
+        }
+        
+        // Progress by course for chart
+        $courseProgress = $enrolledCourses->map(function($course) use ($user) {
+            $totalCourseLessons = $course->modules->sum(function($module) {
+                return $module->lessons->count();
+            });
+            
+            $completedCourseLessons = 0;
+            foreach ($course->modules as $module) {
+                foreach ($module->lessons as $lesson) {
+                    $progress = $user->lessonProgress()
+                        ->where('lesson_id', $lesson->id)
+                        ->where('is_completed', true)
+                        ->first();
+                    if ($progress) {
+                        $completedCourseLessons++;
+                    }
+                }
+            }
+            
+            return [
+                'course' => $course->title,
+                'progress' => $totalCourseLessons > 0 ? round(($completedCourseLessons / $totalCourseLessons) * 100, 1) : 0,
+                'completed' => $completedCourseLessons,
+                'total' => $totalCourseLessons,
+            ];
+        })->values();
+
+        // Weekly progress data for chart
+        $weeklyProgress = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $completedOnDate = $user->lessonProgress()
+                ->where('is_completed', true)
+                ->whereDate('updated_at', $date->toDateString())
+                ->count();
+            $weeklyProgress[] = [
+                'date' => $date->format('D'),
+                'completed' => $completedOnDate,
+            ];
+        }
+
+        // Quiz performance over time
+        $quizPerformance = $user->quizAttempts()
+            ->where('submitted', true)
+            ->orderBy('completed_at', 'asc')
+            ->get()
+            ->map(function($attempt) {
+                return [
+                    'score' => $attempt->score_percentage ?? 0,
+                    'date' => $attempt->completed_at ? $attempt->completed_at->format('M d') : 'N/A',
+                ];
+            })
+            ->take(10)
+            ->values();
 
         return view('dashboard.student', compact(
             'enrolledCourses',
             'recentProgress',
             'recentQuizAttempts',
-            'overallProgress'
+            'overallProgress',
+            'totalEnrolledCourses',
+            'completedCourses',
+            'activeCourses',
+            'totalLessons',
+            'completedLessonsCount',
+            'inProgressLessons',
+            'totalQuizAttempts',
+            'passedQuizzes',
+            'failedQuizzes',
+            'averageScore',
+            'courseProgress',
+            'weeklyProgress',
+            'quizPerformance'
         ));
     }
 

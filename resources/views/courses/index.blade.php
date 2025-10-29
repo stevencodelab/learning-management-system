@@ -9,14 +9,21 @@ use Illuminate\Support\Facades\Storage;
     <div class="col-md-12 grid-margin">
         <div class="row">
             <div class="col-12 col-xl-8 mb-4 mb-xl-0">
-                <h3 class="font-weight-bold">Courses Management</h3>
-                <h6 class="font-weight-normal mb-0">Manage and organize all your courses here</h6>
+                @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                    <h3 class="font-weight-bold">Courses Management</h3>
+                    <h6 class="font-weight-normal mb-0">Manage and organize all your courses here</h6>
+                @else
+                    <h3 class="font-weight-bold">Available Courses</h3>
+                    <h6 class="font-weight-normal mb-0">Browse and enroll in courses</h6>
+                @endif
             </div>
             <div class="col-12 col-xl-4">
                 <div class="justify-content-end d-flex">
-                    <a href="{{ route('courses.create') }}" class="btn btn-primary">
-                        <i class="icon-plus"></i> Create New Course
-                    </a>
+                    @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                        <a href="{{ route('courses.create') }}" class="btn btn-primary">
+                            <i class="icon-plus"></i> Create New Course
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -24,6 +31,7 @@ use Illuminate\Support\Facades\Storage;
 </div>
 
 <!-- Advanced Search -->
+@if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
 <div class="row">
     <div class="col-md-12 grid-margin">
         <div class="card">
@@ -94,83 +102,134 @@ use Illuminate\Support\Facades\Storage;
         </div>
     </div>
 </div>
-
-<!-- Courses Grid -->
-<div class="row">
-    @forelse($courses as $course)
-    <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card course-card" style="height: 100%; display: flex; flex-direction: column;">
-            <div class="card-body" style="display: flex; flex-direction: column; flex: 1;">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="badge {{ $course->is_published ? 'badge-success' : 'badge-warning' }}">
-                        {{ $course->is_published ? 'Published' : 'Draft' }}
-                    </div>
-                    <div class="badge badge-info">{{ ucfirst($course->level) }}</div>
-                </div>
-                
-                @if($course->thumbnail)
-                <img src="{{ Storage::url($course->thumbnail) }}" class="img-fluid rounded mb-3" alt="{{ $course->title }}" style="width: 100%; height: 180px; object-fit: cover;">
-                @else
-                <div class="bg-light rounded mb-3" style="width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <i class="icon-book" style="font-size: 64px; color: rgba(255, 255, 255, 0.5);"></i>
-                </div>
-                @endif
-                
-                <h5 class="font-weight-bold mb-2" style="min-height: 48px; line-height: 1.4;">{{ $course->title }}</h5>
-                <p class="text-muted mb-3" style="min-height: 60px; font-size: 13px; line-height: 1.6;">{{ Str::limit($course->description, 100) }}</p>
-                
-                <div class="d-flex align-items-center justify-content-between text-muted mb-3" style="font-size: 13px;">
-                    <span><i class="icon-clock"></i> {{ $course->duration_hours }}h</span>
-                    <span><i class="icon-people"></i> {{ $course->modules->count() }} Modules</span>
-                    <span><i class="ti-wallet"></i> ${{ number_format($course->price, 2) }}</span>
-                </div>
-                
-                <div class="d-flex gap-2 mt-auto">
-                    <a href="{{ route('courses.show', $course) }}" class="btn btn-sm btn-info flex-fill">
-                        <i class="icon-eye"></i> View
-                    </a>
-                    <a href="{{ route('courses.edit', $course) }}" class="btn btn-sm btn-primary flex-fill">
-                        <i class="icon-pencil"></i> Edit
-                    </a>
-                    <form action="{{ route('courses.destroy', $course) }}" method="POST" class="d-inline flex-fill" onsubmit="return confirm('Are you sure you want to delete this course?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger w-100">
-                            <i class="icon-trash"></i> Delete
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    @empty
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <i class="icon-book" style="font-size: 64px; color: #ccc;"></i>
-                <h4 class="mt-3">No courses found</h4>
-                <p class="text-muted">Start by creating your first course!</p>
-                <a href="{{ route('courses.create') }}" class="btn btn-primary mt-3">
-                    <i class="icon-plus"></i> Create Course
-                </a>
-            </div>
-        </div>
-    </div>
-    @endforelse
-</div>
-
-<!-- Pagination -->
-@if($courses->hasPages())
-<div class="row">
-    <div class="col-md-12">
-        <div class="d-flex justify-content-center">
-            {{ $courses->links() }}
-        </div>
-    </div>
-</div>
 @endif
 
+<!-- Courses DataTable -->
+<div class="row mt-3">
+    <div class="col-md-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="coursesTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Course</th>
+                                <th>Level</th>
+                                <th>Status</th>
+                                <th>Duration</th>
+                                <th>Modules</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($courses as $course)
+                            <tr>
+                                <td data-priority="1">
+                                    <div class="d-flex align-items-center">
+                                        @if($course->thumbnail)
+                                            <img src="{{ Storage::url($course->thumbnail) }}" 
+                                                 alt="{{ $course->title }}"
+                                                 class="d-none d-md-block"
+                                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-right: 12px; flex-shrink: 0;">
+                                        @else
+                                            <div class="d-none d-md-block" style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0;">
+                                                <i class="icon-book text-white" style="font-size: 24px;"></i>
+                                            </div>
+                                        @endif
+                                        <div style="min-width: 0;">
+                                            <div class="font-weight-bold" style="word-break: break-word;">{{ $course->title }}</div>
+                                            <small class="text-muted d-none d-md-block" style="word-break: break-word;">{{ Str::limit($course->description, 60) }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-priority="4">
+                                    <span class="badge badge-info">{{ ucfirst($course->level) }}</span>
+                                </td>
+                                <td data-priority="2">
+                                    <span class="badge {{ $course->is_published ? 'badge-success' : 'badge-warning' }}">
+                                        {{ $course->is_published ? 'Published' : 'Draft' }}
+                                    </span>
+                                </td>
+                                <td data-priority="5">
+                                    <span class="text-muted">
+                                        <i class="icon-clock mr-1"></i>{{ $course->duration_hours }}h
+                                    </span>
+                                </td>
+                                <td data-priority="6">
+                                    <span class="text-muted">
+                                        <i class="icon-people mr-1"></i>{{ $course->modules->count() }}
+                                    </span>
+                                </td>
+                                <td data-priority="3">
+                                    @if($course->price == 0)
+                                        <span class="badge badge-success">FREE</span>
+                                    @else
+                                        <span class="font-weight-bold text-primary">${{ number_format($course->price, 2) }}</span>
+                                    @endif
+                                </td>
+                                <td data-priority="1">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ route('courses.show', $course) }}" 
+                                           class="btn btn-info" 
+                                           title="View">
+                                            <i class="icon-eye"></i>
+                                        </a>
+                                        @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                                            <a href="{{ route('courses.edit', $course) }}" 
+                                               class="btn btn-primary" 
+                                               title="Edit">
+                                                <i class="icon-pencil"></i>
+                                            </a>
+                                            <form action="{{ route('courses.destroy', $course) }}" 
+                                                  method="POST" 
+                                                  class="d-inline" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this course?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                        class="btn btn-danger" 
+                                                        title="Delete">
+                                                    <i class="icon-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="text-center py-5">
+                                        <i class="icon-book" style="font-size: 64px; color: #ccc;"></i>
+                                        <h4 class="mt-3">No courses found</h4>
+                                        <p class="text-muted">
+                                            @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                                                Start by creating your first course!
+                                            @else
+                                                There are no courses available at the moment.
+                                            @endif
+                                        </p>
+                                        @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                                            <a href="{{ route('courses.create') }}" class="btn btn-primary mt-3">
+                                                <i class="icon-plus"></i> Create Course
+                                            </a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
 <style>
     #searchForm .form-group label {
         font-size: 12px;
@@ -182,19 +241,29 @@ use Illuminate\Support\Facades\Storage;
     #searchForm .form-control {
         border-radius: 8px;
     }
-    .course-card {
-        transition: all 0.3s ease;
-        border: 1px solid #f0f0f0;
+    
+    #coursesTable_wrapper .dataTables_length,
+    #coursesTable_wrapper .dataTables_filter {
+        margin-bottom: 20px;
     }
     
-    .course-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        border-color: #667eea;
+    #coursesTable_wrapper .dataTables_filter {
+        text-align: right;
     }
     
-    .course-card .card-body {
-        padding: 1.25rem;
+    #coursesTable_wrapper .dataTables_filter input {
+        border-radius: 8px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        margin-left: 10px;
+        width: 250px;
+    }
+    
+    #coursesTable_wrapper .dataTables_length select {
+        border-radius: 8px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        margin: 0 5px;
     }
     
     .badge {
@@ -202,6 +271,7 @@ use Illuminate\Support\Facades\Storage;
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
+        white-space: nowrap;
     }
     
     .badge-success {
@@ -219,62 +289,149 @@ use Illuminate\Support\Facades\Storage;
         color: white;
     }
     
-    .gap-2 {
-        gap: 8px;
+    #coursesTable tbody tr:hover {
+        background-color: #f8f9fa;
     }
     
-    /* Ensure uniform card heights */
-    .course-card .card-body {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
+    .btn-group .btn {
+        margin-right: 5px;
     }
     
-    .course-card .btn-group {
-        margin-top: auto;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 991px) {
-        .col-md-6 {
-            margin-bottom: 20px;
-        }
+    .btn-group .btn:last-child {
+        margin-right: 0;
     }
     
     @media (max-width: 768px) {
-        .course-card:hover {
-            transform: translateY(-5px);
+        #coursesTable_wrapper .dataTables_length,
+        #coursesTable_wrapper .dataTables_filter {
+            margin-bottom: 15px;
         }
+        
+        #coursesTable_wrapper .dataTables_filter {
+            text-align: left;
+            margin-top: 10px;
+        }
+        
+        #coursesTable_wrapper .dataTables_filter input {
+            width: 100%;
+            margin-left: 0;
+            margin-top: 10px;
+        }
+        
+        #coursesTable_wrapper .dataTables_info,
+        #coursesTable_wrapper .dataTables_paginate {
+            margin-top: 15px;
+            text-align: center !important;
+        }
+        
+        #coursesTable_wrapper .dataTables_paginate .pagination {
+            justify-content: center;
+        }
+        
+        table.dataTable.dtr-inline.collapsed > tbody > tr > td.child,
+        table.dataTable.dtr-inline.collapsed > tbody > tr > th.child {
+            padding: 0.5rem;
+        }
+        
+        .dtr-details {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .dtr-details li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .dtr-details li:last-child {
+            border-bottom: none;
+        }
+        
+        .dtr-title {
+            font-weight: 600;
+            color: #333;
+            margin-right: 10px;
+            min-width: 120px;
+            display: inline-block;
+        }
+        
+        .dtr-data {
+            color: #666;
+        }
+    }
+    
+    @media (min-width: 769px) and (max-width: 1024px) {
+        #coursesTable_wrapper .dataTables_filter input {
+            width: 200px;
+        }
+    }
+    
+    table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child:before,
+    table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before {
+        background-color: #667eea;
+        border: 2px solid white;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+        top: 50%;
+        transform: translateY(-50%);
     }
 </style>
 @endpush
 
 @push('scripts')
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
 <script>
-    // Live search with debounce
-    let searchTimeout;
-    const searchInput = document.getElementById('search');
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(function() {
-                // Optional: Auto-submit after 1 second of no typing
-                // Uncomment to enable:
-                // document.getElementById('searchForm').submit();
-            }, 1000);
+    (function($) {
+        'use strict';
+        $(document).ready(function() {
+            $('#coursesTable').DataTable({
+                responsive: {
+                    details: {
+                        type: 'column',
+                        target: 'tr'
+                    }
+                },
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                order: [[0, 'asc']],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search courses...",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ courses",
+                    infoEmpty: "No courses available",
+                    infoFiltered: "(filtered from _MAX_ total courses)",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    },
+                    emptyTable: "No courses found"
+                },
+                columnDefs: [
+                    {
+                        targets: -1,
+                        orderable: false,
+                        searchable: false,
+                        responsivePriority: 1
+                    }
+                ],
+                autoWidth: false
+            });
+            
+            $('#coursesTable').each(function() {
+                var datatable = $(this);
+                var search_input = datatable.closest('.dataTables_wrapper').find('div[id$=_filter] input');
+                search_input.attr('placeholder', 'Search courses...');
+                search_input.removeClass('form-control-sm');
+                var length_sel = datatable.closest('.dataTables_wrapper').find('div[id$=_length] select');
+                length_sel.removeClass('form-control-sm');
+            });
         });
-    }
-    
-    // Enter key submit
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('searchForm').submit();
-            }
-        });
-    }
+    })(jQuery);
 </script>
 @endpush
 @endsection

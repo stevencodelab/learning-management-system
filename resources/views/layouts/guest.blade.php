@@ -13,7 +13,7 @@
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
         
         <!-- Favicon -->
-        <link rel="icon" type="image/png" href="{{ asset('build/images/logo/logo.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('images/landing/logo.png') }}">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -317,7 +317,7 @@
                         <!-- Glow Effect -->
                         <div class="absolute inset-0 {{ $errors->any() ? 'bg-red-200 bg-opacity-30' : 'bg-white bg-opacity-30' }} rounded-2xl blur-xl scale-110 pulse-glow"></div>
                         <div class="relative w-20 h-20 sm:w-24 sm:h-24 {{ $errors->any() ? 'bg-red-100 bg-opacity-20 border-red-300' : 'bg-white bg-opacity-20 border-white border-opacity-30' }} rounded-2xl flex items-center justify-center backdrop-blur-sm p-2 sm:p-3 border transition-all duration-300 hover:bg-opacity-30 hover:scale-105 cursor-pointer">
-                            <img src="{{ asset('build/images/logo/logo.png') }}" alt="Smart Edu LMS Logo" class="w-full h-full object-contain">
+                            <img src="{{ asset('images/landing/logo.png') }}" alt="Smart Edu LMS Logo" class="w-full h-full object-contain">
                         </div>
                         <!-- Decorative Elements -->
                         <div class="absolute -top-2 -right-2 w-6 h-6 {{ $errors->any() ? 'bg-red-400' : 'bg-yellow-400' }} rounded-full opacity-60 animate-pulse transition-all duration-300 hover:opacity-100 hover:scale-125"></div>
@@ -401,7 +401,7 @@
                         <!-- Mobile Logo -->
                         <div class="lg:hidden text-center mb-6 sm:mb-8">
                             <div class="w-14 h-14 sm:w-16 sm:h-16 {{ $errors->any() ? 'bg-red-100 border-red-200' : 'blue-gradient' }} rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 p-1.5 sm:p-2 transition-all duration-300">
-                                <img src="{{ asset('build/images/logo/logo.png') }}" alt="Smart Edu LMS Logo" class="w-full h-full object-contain">
+                                <img src="{{ asset('images/landing/logo.png') }}" alt="Smart Edu LMS Logo" class="w-full h-full object-contain">
                             </div>
                             <h1 class="text-xl sm:text-2xl font-bold {{ $errors->any() ? 'text-red-700' : 'text-blue-900' }} transition-colors duration-300">
                                 <span class="gold-text">Smart Edu</span>

@@ -6,6 +6,8 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\QuizQuestionController;
+use App\Http\Controllers\QuizTakingController;
 use App\Http\Controllers\EnrollmentController;
 use Illuminate\Support\Facades\Route;
 
@@ -71,41 +73,43 @@ Route::middleware(['auth', 'permission:delete lessons'])->group(function () {
 });
 
 // Quiz routes
-Route::middleware(['auth', 'permission:view quizzes'])->group(function () {
+// Admin/Instructor can manage quizzes (create, edit, delete)
+Route::middleware(['auth'])->group(function () {
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
     Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
+    
+    // Quiz taking routes - All authenticated users (students)
+    Route::get('/quizzes/{quiz}/start', [QuizTakingController::class, 'start'])->name('quiz.taking.start');
+    Route::get('/quizzes/{quiz}/attempts/{attempt}', [QuizTakingController::class, 'show'])->name('quiz.taking.show');
+    Route::post('/quizzes/{quiz}/attempts/{attempt}/save', [QuizTakingController::class, 'saveAnswer'])->name('quiz.taking.save');
+    Route::post('/quizzes/{quiz}/attempts/{attempt}/submit', [QuizTakingController::class, 'submit'])->name('quiz.taking.submit');
+    Route::get('/quizzes/{quiz}/attempts/{attempt}/result', [QuizTakingController::class, 'result'])->name('quiz.taking.result');
+    Route::get('/quizzes/{quiz}/attempts/{attempt}/progress', [QuizTakingController::class, 'progress'])->name('quiz.taking.progress');
 });
 
-Route::middleware(['auth', 'permission:create quizzes'])->group(function () {
+// Admin/Instructor only - Quiz management
+Route::middleware(['auth'])->group(function () {
     Route::get('/lessons/{lesson}/quizzes/create', [QuizController::class, 'create'])->name('quizzes.create');
     Route::post('/lessons/{lesson}/quizzes', [QuizController::class, 'store'])->name('quizzes.store');
-});
-
-Route::middleware(['auth', 'permission:edit quizzes'])->group(function () {
     Route::get('/quizzes/{quiz}/edit', [QuizController::class, 'edit'])->name('quizzes.edit');
     Route::put('/quizzes/{quiz}', [QuizController::class, 'update'])->name('quizzes.update');
-});
-
-Route::middleware(['auth', 'permission:delete quizzes'])->group(function () {
     Route::delete('/quizzes/{quiz}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
+    
+    // Quiz question management routes - Admin/Instructor only
+    Route::get('/quizzes/{quiz}/questions', [QuizQuestionController::class, 'index'])->name('quiz.questions.index');
+    Route::get('/quizzes/{quiz}/questions/create', [QuizQuestionController::class, 'create'])->name('quiz.questions.create');
+    Route::post('/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store'])->name('quiz.questions.store');
+    Route::get('/quizzes/{quiz}/questions/{question}/edit', [QuizQuestionController::class, 'edit'])->name('quiz.questions.edit');
+    Route::put('/quizzes/{quiz}/questions/{question}', [QuizQuestionController::class, 'update'])->name('quiz.questions.update');
+    Route::delete('/quizzes/{quiz}/questions/{question}', [QuizQuestionController::class, 'destroy'])->name('quiz.questions.destroy');
+    Route::post('/quizzes/{quiz}/questions/reorder', [QuizQuestionController::class, 'reorder'])->name('quiz.questions.reorder');
 });
 
-Route::middleware(['auth', 'permission:take quizzes'])->group(function () {
-    Route::get('/quizzes/{quiz}/take', [QuizController::class, 'take'])->name('quizzes.take');
-    Route::post('/quizzes/{quiz}/submit', [QuizController::class, 'submit'])->name('quizzes.submit');
-});
-
-// Enrollment routes
-Route::middleware(['auth', 'permission:view enrollments'])->group(function () {
+// Enrollment routes - Students can enroll themselves
+Route::middleware('auth')->group(function () {
     Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
     Route::get('/enrollments/{enrollment}', [EnrollmentController::class, 'show'])->name('enrollments.show');
-});
-
-Route::middleware(['auth', 'permission:create enrollments'])->group(function () {
     Route::post('/enrollments', [EnrollmentController::class, 'store'])->name('enrollments.store');
-});
-
-Route::middleware(['auth'])->group(function () {
     Route::patch('/enrollments/{enrollment}/progress', [EnrollmentController::class, 'updateProgress'])->name('enrollments.update-progress');
     Route::patch('/enrollments/{enrollment}/complete', [EnrollmentController::class, 'complete'])->name('enrollments.complete');
     Route::delete('/enrollments/{enrollment}', [EnrollmentController::class, 'destroy'])->name('enrollments.destroy');

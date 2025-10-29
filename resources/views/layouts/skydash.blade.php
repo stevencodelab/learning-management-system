@@ -18,7 +18,7 @@
     <!-- inject:css -->
     <link rel="stylesheet" href="{{ asset('skydash/css/style.css') }}">
     
-    <link rel="shortcut icon" href="{{ asset('skydash/images/favicon.png') }}" />
+    <link rel="shortcut icon" href="{{ asset('images/landing/logo.png') }}" />
     
     <style>
         /* Mobile Sidebar Hide */
@@ -180,10 +180,10 @@
         <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
             <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
                 <a class="navbar-brand brand-logo me-5" href="{{ route('dashboard') }}">
-                    <img src="{{ asset('build/images/logo/logo.png') }}" class="me-2" alt="logo" style="max-height: 40px;" />
+                    <img src="{{ asset('images/landing/logo.png') }}" class="me-2" alt="logo" style="max-height: 40px;" />
                 </a>
                 <a class="navbar-brand brand-logo-mini" href="{{ route('dashboard') }}">
-                    <img src="{{ asset('build/images/logo/logo.png') }}" alt="logo" style="max-height: 30px;" />
+                    <img src="{{ asset('images/landing/logo.png') }}" alt="logo" style="max-height: 30px;" />
                 </a>
             </div>
             <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
@@ -267,8 +267,14 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('enrollments.*') ? 'active' : '' }}" href="{{ route('enrollments.index') }}">
-                            <i class="icon-users menu-icon"></i>
+                            <i class="ti-id-badge menu-icon"></i>
                             <span class="menu-title">Enrollments</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('quizzes.*') ? 'active' : '' }}" href="{{ route('quizzes.index') }}">
+                            <i class="icon-book menu-icon"></i>
+                            <span class="menu-title">Quizzes</span>
                         </a>
                     </li>
                 @endif
@@ -286,6 +292,12 @@
                             <span class="menu-title">Students</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('quizzes.*') ? 'active' : '' }}" href="{{ route('quizzes.index') }}">
+                            <i class="icon-note menu-icon"></i>
+                            <span class="menu-title">Quizzes</span>
+                        </a>
+                    </li>
                 @endif
                 
                 @if(auth()->user()->hasRole('student'))
@@ -297,8 +309,14 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('enrollments.index') }}">
-                            <i class="icon-docs menu-icon"></i>
+                            <i class="ti-id-badge menu-icon"></i>
                             <span class="menu-title">My Enrollments</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('quizzes.*') ? 'active' : '' }}" href="{{ route('quizzes.index') }}">
+                            <i class="icon-book menu-icon"></i>
+                            <span class="menu-title">Quizzes</span>
                         </a>
                     </li>
                 @endif
@@ -352,12 +370,20 @@
                     <i class="ti-id-badge"></i>
                     <span>Enrollments</span>
                 </a>
+                <a href="{{ route('quizzes.index') }}" class="bottom-nav-item {{ request()->routeIs('quizzes.*') ? 'active' : '' }}">
+                    <i class="icon-book"></i>
+                    <span>Quizzes</span>
+                </a>
             @endif
             
             @if(auth()->user()->hasRole('instructor'))
                 <a href="{{ route('courses.index') }}" class="bottom-nav-item {{ request()->routeIs('courses.*') ? 'active' : '' }}">
                     <i class="icon-book"></i>
                     <span>Courses</span>
+                </a>
+                <a href="{{ route('quizzes.index') }}" class="bottom-nav-item {{ request()->routeIs('quizzes.*') ? 'active' : '' }}">
+                    <i class="icon-book"></i>
+                    <span>Quizzes</span>
                 </a>
                 <a href="#" class="bottom-nav-item">
                     <i class="icon-users"></i>
@@ -373,6 +399,10 @@
                 <a href="{{ route('enrollments.index') }}" class="bottom-nav-item {{ request()->routeIs('enrollments.*') ? 'active' : '' }}">
                     <i class="icon-docs"></i>
                     <span>My Courses</span>
+                </a>
+                <a href="{{ route('quizzes.index') }}" class="bottom-nav-item {{ request()->routeIs('quizzes.*') ? 'active' : '' }}">
+                    <i class="icon-note"></i>
+                    <span>Quizzes</span>
                 </a>
             @endif
             

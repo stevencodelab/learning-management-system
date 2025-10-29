@@ -12,9 +12,20 @@ class QuizQuestion extends Model
     protected $fillable = [
         'quiz_id',
         'question',
+        'question_text',
         'type',
         'points',
+        'partial_points',
         'order',
+        'explanation',
+        'difficulty',
+        'tags',
+    ];
+
+    protected $casts = [
+        'tags' => 'array',
+        'points' => 'integer',
+        'partial_points' => 'decimal:2',
     ];
 
     // Relationships
@@ -37,5 +48,29 @@ class QuizQuestion extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('order');
+    }
+
+    // Additional scopes
+    public function scopeByDifficulty($query, $difficulty)
+    {
+        return $query->where('difficulty', $difficulty);
+    }
+
+    // Helper methods
+    public function getAnswersForAttempt()
+    {
+        $answers = $this->answers;
+        
+        // Add this to Quiz model's shuffle_answers check
+        // This will be handled in the controller
+        
+        return $answers;
+    }
+
+    public function calculateScore($userAnswer)
+    {
+        // This depends on question type
+        // Will be implemented in the attempt controller
+        return 0;
     }
 }

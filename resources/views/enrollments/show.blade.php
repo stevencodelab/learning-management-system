@@ -10,7 +10,12 @@ use Illuminate\Support\Facades\Storage;
         <div class="row">
             <div class="col-12 col-xl-8 mb-4 mb-xl-0">
                 <h3 class="font-weight-bold">{{ $enrollment->course->title }}</h3>
-                <h6 class="font-weight-normal mb-0">{{ $enrollment->course->description }}</h6>
+                @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']) && isset($enrollment->user))
+                    <h6 class="font-weight-normal mb-2">
+                        <i class="icon-user mr-1"></i> Student: <strong>{{ $enrollment->user->name }}</strong>
+                    </h6>
+                @endif
+                <h6 class="font-weight-normal mb-0">{{ Str::limit($enrollment->course->description, 100) }}</h6>
             </div>
             <div class="col-12 col-xl-4">
                 <div class="justify-content-end d-flex">
@@ -114,6 +119,14 @@ use Illuminate\Support\Facades\Storage;
             <div class="card-body">
                 <h4 class="card-title mb-4">Enrollment Info</h4>
                 
+                @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']) && isset($enrollment->user))
+                <div class="mb-4">
+                    <p class="text-muted mb-2">Student</p>
+                    <p class="font-weight-bold">{{ $enrollment->user->name }}</p>
+                    <p class="text-muted small mb-0">{{ $enrollment->user->email }}</p>
+                </div>
+                @endif
+                
                 <div class="mb-4">
                     <p class="text-muted mb-2">Status</p>
                     <span class="badge {{ $enrollment->completed_at ? 'badge-success' : ($enrollment->progress_percentage > 0 ? 'badge-info' : 'badge-warning') }}">
@@ -160,19 +173,25 @@ use Illuminate\Support\Facades\Storage;
                     </div>
                 </div>
                 
-                @if(!$enrollment->completed_at && $enrollment->progress_percentage < 100)
-                <form action="{{ route('enrollments.complete', $enrollment) }}" method="POST" class="mb-3">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('Mark this course as completed?');">
-                        <i class="icon-check"></i> Mark as Complete
-                    </button>
-                </form>
+                @if(!auth()->check() || !auth()->user()->hasAnyRole(['admin', 'instructor']))
+                    @if(!$enrollment->completed_at && $enrollment->progress_percentage < 100)
+                    <form action="{{ route('enrollments.complete', $enrollment) }}" method="POST" class="mb-3">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('Mark this course as completed?');">
+                            <i class="icon-check"></i> Mark as Complete
+                        </button>
+                    </form>
+                    @endif
+                    
+                    <a href="{{ route('courses.show', $enrollment->course) }}" class="btn btn-primary w-100">
+                        <i class="icon-book"></i> Continue Learning
+                    </a>
+                @else
+                    <a href="{{ route('courses.show', $enrollment->course) }}" class="btn btn-primary w-100">
+                        <i class="icon-book"></i> View Course
+                    </a>
                 @endif
-                
-                <a href="{{ route('courses.show', $enrollment->course) }}" class="btn btn-primary w-100">
-                    <i class="icon-book"></i> Continue Learning
-                </a>
             </div>
         </div>
     </div>

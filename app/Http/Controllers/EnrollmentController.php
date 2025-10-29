@@ -10,15 +10,26 @@ use Illuminate\Support\Facades\Auth;
 class EnrollmentController extends Controller
 {
     /**
-     * Display a listing of user's enrollments
+     * Display a listing of enrollments
+     * For admin/instructor: show all enrollments
+     * For students: show only their own enrollments
      */
     public function index()
     {
         $user = Auth::user();
-        $enrollments = $user->enrollments()
-            ->with(['course.modules.lessons'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        
+        // Admin and instructor can see all enrollments
+        if ($user->hasAnyRole(['admin', 'instructor'])) {
+            $enrollments = Enrollment::with(['course.modules.lessons', 'user'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            // Students can only see their own enrollments
+            $enrollments = $user->enrollments()
+                ->with(['course.modules.lessons'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
 
         return view('enrollments.index', compact('enrollments'));
     }
@@ -61,12 +72,15 @@ class EnrollmentController extends Controller
      */
     public function show(Enrollment $enrollment)
     {
-        // Ensure user can only view their own enrollment
-        if ($enrollment->user_id !== Auth::id()) {
-            abort(403);
+        $user = Auth::user();
+        
+        // Admin and instructor can view any enrollment
+        // Students can only view their own enrollment
+        if (!$user->hasAnyRole(['admin', 'instructor']) && $enrollment->user_id !== $user->id) {
+            abort(403, 'You do not have permission to view this enrollment.');
         }
 
-        $enrollment->load(['course.modules.lessons', 'course.modules.lessons.quiz']);
+        $enrollment->load(['course.modules.lessons', 'course.modules.lessons.quiz', 'user']);
         
         return view('enrollments.show', compact('enrollment'));
     }

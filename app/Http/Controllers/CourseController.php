@@ -57,6 +57,7 @@ class CourseController extends Controller
      */
     public function create()
     {
+        $this->checkManagePermission();
         return view('courses.create');
     }
 
@@ -65,6 +66,8 @@ class CourseController extends Controller
      */
     public function store(Request $request)
     {
+        $this->checkManagePermission();
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -98,9 +101,20 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
-        $course->load(['modules.lessons', 'modules.lessons.quiz']);
+        $course->load(['modules.lessons', 'modules.lessons.quiz', 'enrollments']);
         
-        return view('courses.show', compact('course'));
+        // Check if user is enrolled
+        $isEnrolled = false;
+        $enrollment = null;
+        
+        if (auth()->check()) {
+            $enrollment = auth()->user()->enrollments()
+                ->where('course_id', $course->id)
+                ->first();
+            $isEnrolled = $enrollment !== null;
+        }
+        
+        return view('courses.show', compact('course', 'isEnrolled', 'enrollment'));
     }
 
     /**
@@ -108,6 +122,7 @@ class CourseController extends Controller
      */
     public function edit(Course $course)
     {
+        $this->checkManagePermission();
         return view('courses.edit', compact('course'));
     }
 
@@ -116,6 +131,8 @@ class CourseController extends Controller
      */
     public function update(Request $request, Course $course)
     {
+        $this->checkManagePermission();
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -154,6 +171,8 @@ class CourseController extends Controller
      */
     public function destroy(Course $course)
     {
+        $this->checkManagePermission();
+        
         // Delete thumbnail
         if ($course->thumbnail) {
             Storage::disk('public')->delete($course->thumbnail);
@@ -170,9 +189,21 @@ class CourseController extends Controller
      */
     public function togglePublished(Course $course)
     {
+        $this->checkManagePermission();
+        
         $course->update(['is_published' => !$course->is_published]);
 
         return redirect()->back()
             ->with('success', 'Course status updated successfully.');
+    }
+
+    /**
+     * Check if user has permission to manage courses
+     */
+    private function checkManagePermission()
+    {
+        if (!auth()->check() || !auth()->user()->hasAnyRole(['admin', 'instructor'])) {
+            abort(403, 'Only admins and instructors can manage courses.');
+        }
     }
 }
