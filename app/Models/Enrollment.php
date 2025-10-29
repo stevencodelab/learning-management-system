@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Enrollment extends Model
 {
@@ -12,6 +13,7 @@ class Enrollment extends Model
     protected $fillable = [
         'user_id',
         'course_id',
+        'slug',
         'enrolled_at',
         'completed_at',
         'progress_percentage',
@@ -21,6 +23,18 @@ class Enrollment extends Model
         'enrolled_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
+
+    // Boot method to auto-generate slug
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($enrollment) {
+            if (empty($enrollment->slug)) {
+                $enrollment->slug = Str::slug($enrollment->course->title . '-' . $enrollment->user->name);
+            }
+        });
+    }
 
     // Relationships
     public function user()
@@ -43,5 +57,11 @@ class Enrollment extends Model
     public function scopeCompleted($query)
     {
         return $query->whereNotNull('completed_at');
+    }
+    
+    // Helper method to get URL with slug
+    public function getUrlAttribute()
+    {
+        return route('enrollments.show', ['enrollment' => $this->id, 'slug' => $this->slug]);
     }
 }

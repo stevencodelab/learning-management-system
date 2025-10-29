@@ -23,7 +23,7 @@
     <div class="col-md-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('courses.store') }}" method="POST" enctype="multipart/form-data">
+                <form id="courseForm" action="{{ route('courses.store') }}" method="POST" enctype="multipart/form-data" onsubmit="event.preventDefault(); handleFormSubmit(this);">
                     @csrf
                     
                     <div class="row">
@@ -146,6 +146,22 @@ function previewImage(input) {
     } else {
         preview.style.display = 'none';
     }
+}
+
+function handleFormSubmit(form) {
+    Swal.fire({
+        title: "Do you want to save the changes?",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        denyButtonText: `Don't save`
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        } else if (result.isDenied) {
+            Swal.fire("Changes are not saved", "", "info");
+        }
+    });
 }
 </script>
 @endpush

@@ -25,7 +25,7 @@
                     <a href="{{ route('quiz.questions.create', $quiz) }}" class="btn btn-primary mr-2">
                         <i class="icon-plus"></i> Add Question
                     </a>
-                    <a href="{{ route('quizzes.show', $quiz) }}" class="btn btn-secondary">
+                    <a href="{{ $quiz->url }}" class="btn btn-secondary">
                         <i class="icon-arrow-left"></i> Back
                     </a>
                 </div>
@@ -76,24 +76,6 @@
     <div class="col-md-12 grid-margin">
         <div class="card">
             <div class="card-body">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="icon-check mr-2"></i>{{ session('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="icon-close mr-2"></i>{{ session('error') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
-
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="card-title mb-0">
                         <i class="icon-question text-primary"></i> Questions ({{ $quiz->questions->count() }})
@@ -162,7 +144,7 @@
                                         <form action="{{ route('quiz.questions.destroy', [$quiz, $question]) }}" 
                                               method="POST" 
                                               class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to delete this question?');">
+                                              onsubmit="event.preventDefault(); confirmDelete(event, 'Are you sure you want to delete this question?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger" title="Delete">

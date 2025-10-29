@@ -15,6 +15,17 @@
             </div>
             <div class="col-12 col-xl-4">
                 <div class="justify-content-end d-flex">
+                    @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                        @if(isset($lessons) && $lessons && $lessons->count() > 0)
+                            <a href="{{ url('/lessons/' . $lessons->first()->id . '/quizzes/create') }}" class="btn btn-primary mr-2">
+                                <i class="icon-plus"></i> Create Quiz
+                            </a>
+                        @else
+                            <button type="button" class="btn btn-primary mr-2" disabled title="No lessons available">
+                                <i class="icon-plus"></i> Create Quiz
+                            </button>
+                        @endif
+                    @endif
                     <a href="{{ route('quizzes.index') }}" class="btn btn-secondary">
                         <i class="icon-refresh"></i> Refresh
                     </a>
@@ -71,19 +82,6 @@
                 <h3 class="mt-3 mb-0">{{ $totalAttempts }}</h3>
                 <p class="text-muted mb-0">Total Attempts</p>
             </div>
-        </div>
-    </div>
-</div>
-@endif
-
-@if(session('success'))
-<div class="row mt-3">
-    <div class="col-md-12">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="icon-check mr-2"></i>{{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
         </div>
     </div>
 </div>
@@ -164,7 +162,7 @@
                                 </td>
                                 <td data-priority="1">
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('quizzes.show', $quiz) }}" 
+                                        <a href="{{ $quiz->url }}" 
                                            class="btn btn-info" 
                                            title="View Details">
                                             <i class="icon-eye"></i>

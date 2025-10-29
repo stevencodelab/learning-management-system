@@ -25,11 +25,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
     Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
     Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
-    Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
     Route::get('/courses/{course}/edit', [CourseController::class, 'edit'])->name('courses.edit');
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
     Route::patch('/courses/{course}/toggle-published', [CourseController::class, 'togglePublished'])->name('courses.toggle-published');
+    Route::get('/courses/{course}/{slug?}', [CourseController::class, 'show'])->name('courses.show');
 });
 
 // Module routes
@@ -76,7 +76,6 @@ Route::middleware(['auth', 'permission:delete lessons'])->group(function () {
 // Admin/Instructor can manage quizzes (create, edit, delete)
 Route::middleware(['auth'])->group(function () {
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
-    Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
     
     // Quiz taking routes - All authenticated users (students)
     Route::get('/quizzes/{quiz}/start', [QuizTakingController::class, 'start'])->name('quiz.taking.start');
@@ -103,12 +102,15 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/quizzes/{quiz}/questions/{question}', [QuizQuestionController::class, 'update'])->name('quiz.questions.update');
     Route::delete('/quizzes/{quiz}/questions/{question}', [QuizQuestionController::class, 'destroy'])->name('quiz.questions.destroy');
     Route::post('/quizzes/{quiz}/questions/reorder', [QuizQuestionController::class, 'reorder'])->name('quiz.questions.reorder');
+    
+    // Show quiz - must be last to avoid conflicts
+    Route::get('/quizzes/{quiz}/{slug?}', [QuizController::class, 'show'])->name('quizzes.show');
 });
 
 // Enrollment routes - Students can enroll themselves
 Route::middleware('auth')->group(function () {
     Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
-    Route::get('/enrollments/{enrollment}', [EnrollmentController::class, 'show'])->name('enrollments.show');
+    Route::get('/enrollments/{enrollment}/{slug?}', [EnrollmentController::class, 'show'])->name('enrollments.show');
     Route::post('/enrollments', [EnrollmentController::class, 'store'])->name('enrollments.store');
     Route::patch('/enrollments/{enrollment}/progress', [EnrollmentController::class, 'updateProgress'])->name('enrollments.update-progress');
     Route::patch('/enrollments/{enrollment}/complete', [EnrollmentController::class, 'complete'])->name('enrollments.complete');

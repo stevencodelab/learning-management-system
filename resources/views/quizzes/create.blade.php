@@ -20,14 +20,19 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8 grid-margin stretch-card">
+    <div class="col-lg-8 col-md-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('quizzes.store', $lesson) }}" method="POST">
+                <form id="quizForm" action="{{ route('quizzes.store', $lesson) }}" method="POST" onsubmit="event.preventDefault(); handleFormSubmit(this);">
                     @csrf
                     
-                    <div class="form-group">
-                        <label for="title" class="form-label">Quiz Title <span class="text-danger">*</span></label>
+                    <!-- Basic Information Section -->
+                    <h5 class="mb-3">
+                        <i class="icon-info text-primary mr-2"></i> Basic Information
+                    </h5>
+                    
+                    <div class="form-group mb-3">
+                        <label for="title" class="form-label font-weight-bold">Quiz Title <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('title') is-invalid @enderror" 
                                id="title" name="title" value="{{ old('title') }}" 
                                placeholder="Enter quiz title" required>
@@ -36,45 +41,56 @@
                         @enderror
                     </div>
                     
-                    <div class="form-group">
-                        <label for="description" class="form-label">Description</label>
+                    <div class="form-group mb-3">
+                        <label for="description" class="form-label font-weight-bold">Description</label>
                         <textarea class="form-control @error('description') is-invalid @enderror" 
                                   id="description" name="description" rows="4" 
                                   placeholder="Enter quiz description (optional)">{{ old('description') }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        <small class="form-text text-muted">Provide a brief description of what this quiz covers</small>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-4">
+                    <hr class="my-3">
+                    
+                    <!-- Quiz Settings Section -->
+                    <h5 class="mb-3">
+                        <i class="icon-settings text-primary mr-2"></i> Quiz Settings
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label for="passing_score" class="form-label">Passing Score (%) <span class="text-danger">*</span></label>
+                                <label for="passing_score" class="form-label font-weight-bold">Passing Score (%) <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control @error('passing_score') is-invalid @enderror" 
                                        id="passing_score" name="passing_score" value="{{ old('passing_score', 60) }}" 
                                        min="0" max="100" required>
                                 @error('passing_score')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="form-text text-muted">Minimum score to pass</small>
+                                <small class="form-text text-muted">Minimum score required to pass (0-100)</small>
                             </div>
                         </div>
                         
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label for="time_limit_minutes" class="form-label">Time Limit (Minutes)</label>
+                                <label for="time_limit_minutes" class="form-label font-weight-bold">Time Limit (Minutes)</label>
                                 <input type="number" class="form-control @error('time_limit_minutes') is-invalid @enderror" 
                                        id="time_limit_minutes" name="time_limit_minutes" value="{{ old('time_limit_minutes') }}" 
-                                       min="1" placeholder="No limit">
+                                       min="1" placeholder="Leave empty for no limit">
                                 @error('time_limit_minutes')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="form-text text-muted">Leave empty if there's no time limit</small>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-md-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <label for="status" class="form-label font-weight-bold">Status <span class="text-danger">*</span></label>
                                 <select class="form-control @error('status') is-invalid @enderror" 
                                         id="status" name="status" required>
                                     <option value="draft" {{ old('status', 'draft') == 'draft' ? 'selected' : '' }}>Draft</option>
@@ -83,6 +99,7 @@
                                 @error('status')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="form-text text-muted">Draft quizzes are not visible to students</small>
                             </div>
                         </div>
                     </div>
@@ -96,12 +113,15 @@
                     <input type="hidden" name="show_correct_answers" value="0">
                     <input type="hidden" name="negative_marking" value="0">
                     
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="icon-check"></i> Create Quiz
+                    <hr class="my-3">
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-start align-items-center mt-3">
+                        <button type="submit" class="btn btn-primary mr-2">
+                            <i class="icon-check mr-2"></i> Create Quiz
                         </button>
                         <a href="{{ route('quizzes.index') }}" class="btn btn-secondary">
-                            Cancel
+                            <i class="icon-close mr-2"></i> Cancel
                         </a>
                     </div>
                 </form>
@@ -109,36 +129,83 @@
         </div>
     </div>
     
-    <div class="col-md-4 grid-margin stretch-card">
-        <div class="card">
+    <div class="col-lg-4 col-md-12 grid-margin stretch-card">
+        <!-- Course Information Card -->
+        <div class="card mb-3">
             <div class="card-body">
-                <h4 class="card-title">Course Information</h4>
-                <hr>
-                <p class="mb-2"><strong>Course:</strong></p>
-                <p class="text-muted mb-3">{{ $lesson->module->course->title ?? 'N/A' }}</p>
+                <h5 class="card-title mb-3">
+                    <i class="icon-book text-primary mr-2"></i> Course Information
+                </h5>
                 
-                <p class="mb-2"><strong>Module:</strong></p>
-                <p class="text-muted mb-3">{{ $lesson->module->title ?? 'N/A' }}</p>
+                <div class="mb-3">
+                    <label class="text-muted mb-1 d-block" style="font-size: 0.875rem;">Course</label>
+                    <p class="mb-0 font-weight-bold" style="word-break: break-word;">{{ $lesson->module->course->title ?? 'N/A' }}</p>
+                </div>
                 
-                <p class="mb-2"><strong>Lesson:</strong></p>
-                <p class="text-muted mb-3">{{ $lesson->title }}</p>
+                <div class="mb-3">
+                    <label class="text-muted mb-1 d-block" style="font-size: 0.875rem;">Module</label>
+                    <p class="mb-0 font-weight-bold" style="word-break: break-word;">{{ $lesson->module->title ?? 'N/A' }}</p>
+                </div>
                 
-                <p class="mb-2"><strong>Lesson Type:</strong></p>
-                <p class="text-muted mb-3"><span class="badge badge-info">{{ ucfirst($lesson->type ?? 'N/A') }}</span></p>
+                <div class="mb-3">
+                    <label class="text-muted mb-1 d-block" style="font-size: 0.875rem;">Lesson</label>
+                    <p class="mb-0 font-weight-bold" style="word-break: break-word;">{{ $lesson->title }}</p>
+                </div>
+                
+                <div class="mb-0">
+                    <label class="text-muted mb-1 d-block" style="font-size: 0.875rem;">Lesson Type</label>
+                    <span class="badge badge-info">{{ ucfirst($lesson->type ?? 'N/A') }}</span>
+                </div>
             </div>
         </div>
         
+        <!-- Quick Tips Card -->
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Quick Tips</h5>
-                <ul class="list-unstyled">
-                    <li><i class="icon-info text-info"></i> After creating the quiz, you can add questions.</li>
-                    <li><i class="icon-info text-info"></i> Set an appropriate passing score based on difficulty.</li>
-                    <li><i class="icon-info text-info"></i> Time limits help ensure fair assessment.</li>
+                <h5 class="card-title mb-3">
+                    <i class="icon-lightbulb text-warning mr-2"></i> Quick Tips
+                </h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="icon-check text-success mr-2"></i>
+                        <small>Add questions after creating the quiz.</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="icon-check text-success mr-2"></i>
+                        <small>Set appropriate passing score.</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="icon-check text-success mr-2"></i>
+                        <small>Time limits ensure fair assessment.</small>
+                    </li>
+                    <li>
+                        <i class="icon-check text-success mr-2"></i>
+                        <small>Save as draft before publishing.</small>
+                    </li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+function handleFormSubmit(form) {
+    Swal.fire({
+        title: "Do you want to save the changes?",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        denyButtonText: `Don't save`
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        } else if (result.isDenied) {
+            Swal.fire("Changes are not saved", "", "info");
+        }
+    });
+}
+</script>
+@endpush
 @endsection
 

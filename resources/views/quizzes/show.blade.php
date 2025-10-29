@@ -450,7 +450,7 @@
                     </a>
                     <hr>
                     <form action="{{ route('quizzes.destroy', $quiz) }}" method="POST" 
-                          onsubmit="return confirm('Are you sure you want to delete this quiz? This action cannot be undone.');">
+                          onsubmit="event.preventDefault(); confirmDelete(event);">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger w-100">

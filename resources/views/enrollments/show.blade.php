@@ -184,11 +184,11 @@ use Illuminate\Support\Facades\Storage;
                     </form>
                     @endif
                     
-                    <a href="{{ route('courses.show', $enrollment->course) }}" class="btn btn-primary w-100">
+                    <a href="{{ $enrollment->course->url }}" class="btn btn-primary w-100">
                         <i class="icon-book"></i> Continue Learning
                     </a>
                 @else
-                    <a href="{{ route('courses.show', $enrollment->course) }}" class="btn btn-primary w-100">
+                    <a href="{{ $enrollment->course->url }}" class="btn btn-primary w-100">
                         <i class="icon-book"></i> View Course
                     </a>
                 @endif

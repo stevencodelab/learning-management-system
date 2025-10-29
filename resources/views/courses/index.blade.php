@@ -170,7 +170,7 @@ use Illuminate\Support\Facades\Storage;
                                 </td>
                                 <td data-priority="1">
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('courses.show', $course) }}" 
+                                        <a href="{{ $course->url }}" 
                                            class="btn btn-info" 
                                            title="View">
                                             <i class="icon-eye"></i>
@@ -184,7 +184,7 @@ use Illuminate\Support\Facades\Storage;
                                             <form action="{{ route('courses.destroy', $course) }}" 
                                                   method="POST" 
                                                   class="d-inline" 
-                                                  onsubmit="return confirm('Are you sure you want to delete this course?');">
+                                                  onsubmit="event.preventDefault(); confirmDelete(event);">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 

@@ -163,7 +163,7 @@
                 <hr>
 
                 <div class="text-center mt-4">
-                    <a href="{{ route('quizzes.show', $quiz) }}" class="btn btn-primary mr-2">
+                    <a href="{{ $quiz->url }}" class="btn btn-primary mr-2">
                         <i class="icon-arrow-left mr-2"></i> Back to Quiz
                     </a>
                     @if($quiz->canUserAttempt(auth()->id()))

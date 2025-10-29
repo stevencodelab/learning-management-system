@@ -70,8 +70,14 @@ class EnrollmentController extends Controller
     /**
      * Display the specified enrollment
      */
-    public function show(Enrollment $enrollment)
+    public function show(Enrollment $enrollment, $slug = null)
     {
+        // If slug is provided, verify it matches the enrollment slug
+        if ($slug && $slug !== $enrollment->slug) {
+            // Redirect to the correct URL with proper slug
+            return redirect()->route('enrollments.show', ['enrollment' => $enrollment->id, 'slug' => $enrollment->slug]);
+        }
+        
         $user = Auth::user();
         
         // Admin and instructor can view any enrollment

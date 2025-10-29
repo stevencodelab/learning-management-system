@@ -347,11 +347,91 @@
     <!-- Plugin js for this page -->
     <script src="{{ asset('skydash/vendors/chart.js/chart.umd.js') }}"></script>
     
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <!-- End plugin js for this page -->
     <!-- inject:js -->
     <script src="{{ asset('skydash/js/template.js') }}"></script>
     
     @stack('scripts')
+    
+    <!-- SweetAlert2 Global Scripts -->
+    <script>
+        // Handle Laravel session messages with SweetAlert
+        @if(session('success'))
+            Swal.fire({
+                position: "top-end",
+                icon: "success",
+                title: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 1500
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                position: "top-end",
+                icon: "error",
+                title: "{{ session('error') }}",
+                showConfirmButton: false,
+                timer: 2000
+            });
+        @endif
+
+        @if(session('info'))
+            Swal.fire({
+                position: "top-end",
+                icon: "info",
+                title: "{{ session('info') }}",
+                showConfirmButton: false,
+                timer: 1500
+            });
+        @endif
+
+        // Global function for delete confirmation
+        function confirmDelete(event, message = "You won't be able to revert this!") {
+            event.preventDefault();
+            const form = event.target.closest('form');
+            
+            Swal.fire({
+                title: "Are you sure?",
+                text: message,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // If form exists, submit it
+                    if (form) {
+                        form.submit();
+                    } else {
+                        // Otherwise, redirect to the href
+                        window.location.href = event.target.href || event.target.closest('a').href;
+                    }
+                }
+            });
+        }
+
+        // Global function for save confirmation
+        function confirmSave(form) {
+            Swal.fire({
+                title: "Do you want to save the changes?",
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                denyButtonText: `Don't save`
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                } else if (result.isDenied) {
+                    Swal.fire("Changes are not saved", "", "info");
+                }
+            });
+        }
+    </script>
     
     <!-- Bottom Navigation for Mobile -->
     <nav class="bottom-nav">

@@ -181,7 +181,7 @@
                     @forelse($enrolledCourses ?? [] as $course)
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card course-card h-100" style="cursor: pointer; transition: all 0.3s;" 
-                             onclick="window.location.href='{{ route('courses.show', $course) }}'"
+                             onclick="window.location.href='{{ $course->url }}'"
                              onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.1)'" 
                              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                             <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 150px; display: flex; align-items: center; justify-content: center;">
@@ -220,7 +220,7 @@
                                     <span class="badge badge-info">
                                         <i class="icon-folder mr-1"></i>{{ $course->modules->count() ?? 0 }} Modules
                                     </span>
-                                    <a href="{{ route('courses.show', $course) }}" class="btn btn-sm btn-primary">
+                                    <a href="{{ $course->url }}" class="btn btn-sm btn-primary">
                                         Continue <i class="icon-arrow-right"></i>
                                     </a>
                                 </div>

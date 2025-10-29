@@ -37,6 +37,13 @@ class Course extends Model
                 $course->slug = Str::slug($course->title);
             }
         });
+        
+        static::updating(function ($course) {
+            // Update slug if title changed
+            if ($course->isDirty('title') && empty($course->slug)) {
+                $course->slug = Str::slug($course->title);
+            }
+        });
     }
 
     // Relationships
@@ -80,6 +87,12 @@ class Course extends Model
     public function scopeLevel($query, $level)
     {
         return $query->where('level', $level);
+    }
+    
+    // Helper method to get URL with slug
+    public function getUrlAttribute()
+    {
+        return route('courses.show', ['course' => $this->id, 'slug' => $this->slug]);
     }
     
     /**

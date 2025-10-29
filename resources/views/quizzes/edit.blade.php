@@ -10,7 +10,7 @@
             </div>
             <div class="col-12 col-xl-4">
                 <div class="justify-content-end d-flex">
-                    <a href="{{ route('quizzes.show', $quiz) }}" class="btn btn-secondary">
+                    <a href="{{ $quiz->url }}" class="btn btn-secondary">
                         <i class="icon-arrow-left"></i> Back
                     </a>
                 </div>

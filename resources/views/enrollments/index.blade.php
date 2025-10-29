@@ -126,13 +126,13 @@ use Illuminate\Support\Facades\Storage;
                                 @endif
                                 <td data-priority="1">
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('enrollments.show', $enrollment) }}" 
+                                        <a href="{{ $enrollment->url }}" 
                                            class="btn btn-info" 
                                            title="View Details">
                                             <i class="icon-eye"></i>
                                         </a>
                                         @if(!auth()->check() || !auth()->user()->hasAnyRole(['admin', 'instructor']))
-                                            <a href="{{ route('courses.show', $enrollment->course) }}" 
+                                            <a href="{{ $enrollment->course->url }}" 
                                                class="btn btn-primary" 
                                                title="Continue Learning">
                                                 <i class="icon-book"></i>
@@ -140,7 +140,7 @@ use Illuminate\Support\Facades\Storage;
                                             <form action="{{ route('enrollments.destroy', $enrollment) }}" 
                                                   method="POST" 
                                                   class="d-inline" 
-                                                  onsubmit="return confirm('Are you sure you want to unenroll from this course?');">
+                                                  onsubmit="event.preventDefault(); confirmDelete(event, 'Are you sure you want to unenroll from this course?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
@@ -150,7 +150,7 @@ use Illuminate\Support\Facades\Storage;
                                                 </button>
                                             </form>
                                         @else
-                                            <a href="{{ route('courses.show', $enrollment->course) }}" 
+                                            <a href="{{ $enrollment->course->url }}" 
                                                class="btn btn-secondary" 
                                                title="View Course">
                                                 <i class="icon-book"></i>

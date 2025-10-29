@@ -36,7 +36,15 @@ class QuizController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        return view('quizzes.index', compact('quizzes'));
+        // Get all lessons for admin/instructor to create quiz
+        $lessons = null;
+        if (auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor'])) {
+            $lessons = Lesson::with(['module.course'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('quizzes.index', compact('quizzes', 'lessons'));
     }
 
     /**
@@ -100,8 +108,14 @@ class QuizController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Quiz $quiz)
+    public function show(Quiz $quiz, $slug = null)
     {
+        // If slug is provided, verify it matches the quiz slug
+        if ($slug && $slug !== $quiz->slug) {
+            // Redirect to the correct URL with proper slug
+            return redirect()->route('quizzes.show', ['quiz' => $quiz->id, 'slug' => $quiz->slug]);
+        }
+        
         $quiz->load(['lesson.module.course', 'questions', 'attempts.user']);
         
         // Load user attempts if student

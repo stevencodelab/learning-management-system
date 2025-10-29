@@ -5,25 +5,6 @@ use Illuminate\Support\Facades\Storage;
 @endphp
 
 @section('content')
-<!-- Success/Error Messages -->
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="icon-check mr-2"></i>{{ session('success') }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="icon-close mr-2"></i>{{ session('error') }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-@endif
-
 <!-- Header Section -->
 <div class="row">
     <div class="col-md-12 grid-margin">
@@ -261,12 +242,12 @@ use Illuminate\Support\Facades\Storage;
                             </div>
                         @endif
                         
-                        <a href="{{ route('courses.show', $course) }}" class="btn btn-primary btn-block btn-lg mb-2">
+                        <a href="{{ $course->url }}" class="btn btn-primary btn-block btn-lg mb-2">
                             <i class="icon-control-play mr-2"></i> Continue Learning
                         </a>
                         
                         <form action="{{ route('enrollments.destroy', $enrollment) }}" method="POST" 
-                              onsubmit="return confirm('Are you sure you want to unenroll from this course?');">
+                              onsubmit="event.preventDefault(); confirmDelete(event, 'Are you sure you want to unenroll from this course?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-outline-danger btn-block">
@@ -357,7 +338,7 @@ use Illuminate\Support\Facades\Storage;
                     </a>
                     
                     <form action="{{ route('courses.destroy', $course) }}" method="POST" 
-                          onsubmit="return confirm('Are you sure you want to delete this course? This action cannot be undone.');">
+                          onsubmit="event.preventDefault(); confirmDelete(event, 'Are you sure you want to delete this course? This action cannot be undone.');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger btn-block mb-2">

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class Quiz extends Model
@@ -13,6 +14,7 @@ class Quiz extends Model
     protected $fillable = [
         'lesson_id',
         'title',
+        'slug',
         'description',
         'passing_score',
         'time_limit_minutes',
@@ -50,6 +52,25 @@ class Quiz extends Model
         'negative_mark_value' => 'decimal:2',
         'passing_score' => 'integer',
     ];
+
+    // Boot method to auto-generate slug
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($quiz) {
+            if (empty($quiz->slug)) {
+                $quiz->slug = Str::slug($quiz->title);
+            }
+        });
+        
+        static::updating(function ($quiz) {
+            // Update slug if title changed
+            if ($quiz->isDirty('title') && empty($quiz->slug)) {
+                $quiz->slug = Str::slug($quiz->title);
+            }
+        });
+    }
 
     // Relationships
     public function lesson()
@@ -183,5 +204,11 @@ class Quiz extends Model
         })->count();
         
         return $completed->count() > 0 ? ($passed / $completed->count()) * 100 : 0;
+    }
+    
+    // Helper method to get URL with slug
+    public function getUrlAttribute()
+    {
+        return route('quizzes.show', ['quiz' => $this->id, 'slug' => $this->slug]);
     }
 }

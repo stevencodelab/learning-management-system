@@ -99,8 +99,14 @@ class CourseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Course $course)
+    public function show(Course $course, $slug = null)
     {
+        // If slug is provided, verify it matches the course slug
+        if ($slug && $slug !== $course->slug) {
+            // Redirect to the correct URL with proper slug
+            return redirect()->route('courses.show', ['course' => $course->id, 'slug' => $course->slug]);
+        }
+        
         $course->load(['modules.lessons', 'modules.lessons.quiz', 'enrollments']);
         
         // Check if user is enrolled
