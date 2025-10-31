@@ -85,6 +85,26 @@
                             </div>
                             
                             <div class="form-group">
+                                <label for="instructor_id" class="form-label">Instructor <span class="text-danger">*</span></label>
+                                <select class="form-control @error('instructor_id') is-invalid @enderror" 
+                                        id="instructor_id" name="instructor_id" required>
+                                    <option value="">Select Instructor</option>
+                                    @foreach($instructors ?? [] as $instructor)
+                                    <option value="{{ $instructor->id }}" 
+                                            {{ old('instructor_id', (auth()->user()->hasRole('instructor') && !auth()->user()->hasRole('admin')) ? auth()->id() : '') == $instructor->id ? 'selected' : '' }}>
+                                        {{ $instructor->name }} ({{ $instructor->email }})
+                                    </option>
+                                    @endforeach
+                                </select>
+                                @error('instructor_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                @if(auth()->user()->hasRole('instructor') && !auth()->user()->hasRole('admin'))
+                                    <small class="form-text text-muted">You will be assigned as the instructor for this course.</small>
+                                @endif
+                            </div>
+                            
+                            <div class="form-group">
                                 <div class="form-check form-check-primary">
                                     <input type="checkbox" class="form-check-input" id="is_published" name="is_published" value="1" {{ old('is_published') ? 'checked' : '' }}>
                                     <label class="form-check-label" for="is_published">

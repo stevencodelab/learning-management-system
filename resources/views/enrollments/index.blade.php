@@ -129,7 +129,7 @@ use Illuminate\Support\Facades\Storage;
                                         <a href="{{ $enrollment->url }}" 
                                            class="btn btn-info" 
                                            title="View Details">
-                                            <i class="icon-eye"></i>
+                                            <i class="mdi mdi-eye"></i>
                                         </a>
                                         @if(!auth()->check() || !auth()->user()->hasAnyRole(['admin', 'instructor']))
                                             <a href="{{ $enrollment->course->url }}" 

@@ -139,7 +139,7 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('quiz.questions.edit', [$quiz, $question]) }}" class="btn btn-sm btn-primary" title="Edit">
-                                            <i class="icon-pencil"></i>
+                                            <i class="mdi mdi-pencil"></i>
                                         </a>
                                         <form action="{{ route('quiz.questions.destroy', [$quiz, $question]) }}" 
                                               method="POST" 
@@ -148,7 +148,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                                <i class="icon-trash"></i>
+                                                <i class="mdi mdi-delete"></i>
                                             </button>
                                         </form>
                                     </div>

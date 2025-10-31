@@ -276,74 +276,8 @@
     </div>
 </div>
 
-<!-- Popular Courses -->
-<div class="popular page_section" id="courses">
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <div class="section_title text-center">
-                    <h1>Popular Courses</h1>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row course_boxes">
-            <!-- Course 1 -->
-            <div class="col-lg-4 course_box">
-                <div class="card">
-                    <img class="card-img-top" src="{{ asset('images/landing/course_1.jpg') }}" alt="">
-                    <div class="card-body text-center">
-                        <div class="card-title"><a href="#">Complete Programming Guide</a></div>
-                        <div class="card-text">Master Python, JavaScript, and modern web development</div>
-                    </div>
-                    <div class="price_box d-flex flex-row align-items-center">
-                        <div class="course_author_image">
-                            <img src="{{ asset('images/landing/author.jpg') }}" alt="">
-                        </div>
-                        <div class="course_author_name">John Doe, <span>Instructor</span></div>
-                        <div class="course_price d-flex flex-column align-items-center justify-content-center"><span>Free</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 2 -->
-            <div class="col-lg-4 course_box">
-                <div class="card">
-                    <img class="card-img-top" src="{{ asset('images/landing/course_2.jpg') }}" alt="">
-                    <div class="card-body text-center">
-                        <div class="card-title"><a href="#">Data Science Fundamentals</a></div>
-                        <div class="card-text">Learn data analysis, machine learning, and visualization</div>
-                    </div>
-                    <div class="price_box d-flex flex-row align-items-center">
-                        <div class="course_author_image">
-                            <img src="{{ asset('images/landing/author.jpg') }}" alt="">
-                        </div>
-                        <div class="course_author_name">Jane Smith, <span>Instructor</span></div>
-                        <div class="course_price d-flex flex-column align-items-center justify-content-center"><span>$49</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 3 -->
-            <div class="col-lg-4 course_box">
-                <div class="card">
-                    <img class="card-img-top" src="{{ asset('images/landing/course_3.jpg') }}" alt="">
-                    <div class="card-body text-center">
-                        <div class="card-title"><a href="#">Advanced JavaScript</a></div>
-                        <div class="card-text">Deep dive into modern ES6+ and advanced concepts</div>
-                    </div>
-                    <div class="price_box d-flex flex-row align-items-center">
-                        <div class="course_author_image">
-                            <img src="{{ asset('images/landing/author.jpg') }}" alt="">
-                        </div>
-                        <div class="course_author_name">Mike Johnson, <span>Instructor</span></div>
-                        <div class="course_price d-flex flex-column align-items-center justify-content-center"><span>$39</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Include Courses Section -->
+@include('landing.components.courses-section')
 
 <!-- Register Section -->
 <div class="register">
@@ -447,6 +381,9 @@
     </div>
 </div>
 
+<!-- Include Quizzes Section -->
+@include('landing.components.quizzes-section')
+
 <!-- Testimonials -->
 <div class="testimonials page_section" id="testimonials">
     <div class="testimonials_background_container">
@@ -525,7 +462,7 @@
             <div class="col-lg-3 milestone_col">
                 <div class="milestone text-center">
                     <div class="milestone_icon"><img src="{{ asset('images/landing/milestone_1.svg') }}" alt=""></div>
-                    <div class="milestone_counter" data-end-value="1000">0</div>
+                    <div class="milestone_counter" data-end-value="{{ $totalStudents ?? 0 }}">0</div>
                     <div class="milestone_text">Students</div>
                 </div>
             </div>
@@ -534,7 +471,7 @@
             <div class="col-lg-3 milestone_col">
                 <div class="milestone text-center">
                     <div class="milestone_icon"><img src="{{ asset('images/landing/milestone_2.svg') }}" alt=""></div>
-                    <div class="milestone_counter" data-end-value="100">0</div>
+                    <div class="milestone_counter" data-end-value="{{ $totalCourses ?? 0 }}">0</div>
                     <div class="milestone_text">Courses</div>
                 </div>
             </div>
@@ -543,7 +480,7 @@
             <div class="col-lg-3 milestone_col">
                 <div class="milestone text-center">
                     <div class="milestone_icon"><img src="{{ asset('images/landing/milestone_3.svg') }}" alt=""></div>
-                    <div class="milestone_counter" data-end-value="50">0</div>
+                    <div class="milestone_counter" data-end-value="{{ $totalTeachers ?? 0 }}">0</div>
                     <div class="milestone_text">Teachers</div>
                 </div>
             </div>

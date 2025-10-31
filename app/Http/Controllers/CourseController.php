@@ -13,7 +13,12 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Course::with('modules.lessons');
+        $query = Course::with(['modules.lessons', 'instructor']);
+        
+        // Filter by instructor if user is instructor (not admin)
+        if (auth()->user()->hasRole('instructor') && !auth()->user()->hasRole('admin')) {
+            $query->where('instructor_id', auth()->id());
+        }
 
         // Advanced Search - full-text search across multiple fields
         if ($request->has('search') && $request->search !== '') {
@@ -58,7 +63,13 @@ class CourseController extends Controller
     public function create()
     {
         $this->checkManagePermission();
-        return view('courses.create');
+        
+        // Get all instructors for assignment
+        $instructors = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'instructor');
+        })->orderBy('name')->get();
+        
+        return view('courses.create', compact('instructors'));
     }
 
     /**
@@ -75,6 +86,7 @@ class CourseController extends Controller
             'price' => 'required|numeric|min:0',
             'duration_hours' => 'required|integer|min:0',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'instructor_id' => 'nullable|exists:users,id',
         ]);
 
         $data = $request->all();
@@ -90,10 +102,28 @@ class CourseController extends Controller
             $data['thumbnail'] = $path;
         }
 
+        // Auto-assign instructor if user is instructor and no instructor_id provided
+        if (auth()->user()->hasRole('instructor') && !auth()->user()->hasRole('admin')) {
+            if (empty($data['instructor_id'])) {
+                $data['instructor_id'] = auth()->id();
+            }
+        }
+
         Course::create($data);
 
         return redirect()->route('courses.index')
             ->with('success', 'Course created successfully.');
+    }
+
+    /**
+     * Display the public detail page for course
+     */
+    public function detail(Course $course, $slug = null)
+    {
+        // Load course with all relationships
+        $course->load(['modules.lessons', 'modules.lessons.quiz', 'enrollments', 'instructor']);
+        
+        return view('courses.detail', compact('course'));
     }
 
     /**
@@ -107,7 +137,7 @@ class CourseController extends Controller
             return redirect()->route('courses.show', ['course' => $course->id, 'slug' => $course->slug]);
         }
         
-        $course->load(['modules.lessons', 'modules.lessons.quiz', 'enrollments']);
+        $course->load(['modules.lessons', 'modules.lessons.quiz', 'enrollments', 'instructor']);
         
         // Check if user is enrolled
         $isEnrolled = false;
@@ -129,7 +159,13 @@ class CourseController extends Controller
     public function edit(Course $course)
     {
         $this->checkManagePermission();
-        return view('courses.edit', compact('course'));
+        
+        // Get all instructors for assignment
+        $instructors = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'instructor');
+        })->orderBy('name')->get();
+        
+        return view('courses.edit', compact('course', 'instructors'));
     }
 
     /**
@@ -146,6 +182,7 @@ class CourseController extends Controller
             'price' => 'required|numeric|min:0',
             'duration_hours' => 'required|integer|min:0',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'instructor_id' => 'nullable|exists:users,id',
         ]);
 
         $data = $request->all();
@@ -164,6 +201,13 @@ class CourseController extends Controller
             $path = $image->storeAs('course-thumbnails', $filename, 'public');
             
             $data['thumbnail'] = $path;
+        }
+
+        // Auto-assign instructor if user is instructor and no instructor_id provided
+        if (auth()->user()->hasRole('instructor') && !auth()->user()->hasRole('admin')) {
+            if (empty($data['instructor_id'])) {
+                $data['instructor_id'] = auth()->id();
+            }
         }
 
         $course->update($data);

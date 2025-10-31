@@ -31,6 +31,11 @@ class Lesson extends Model
         return $this->belongsTo(Module::class);
     }
 
+    public function course()
+    {
+        return $this->belongsTo(Course::class, 'id', 'id')->through('module');
+    }
+
     public function quiz()
     {
         return $this->hasOne(Quiz::class);

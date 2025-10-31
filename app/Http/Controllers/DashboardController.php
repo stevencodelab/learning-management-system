@@ -183,11 +183,86 @@ class DashboardController extends Controller
     }
 
     /**
-     * Display the dashboard for instructors/admins
+     * Display the dashboard for instructors
      */
     public function instructor()
     {
-        // Get course statistics
+        $user = Auth::user();
+        
+        // Get course statistics for instructor's courses only
+        $query = Course::query();
+        if ($user->hasRole('instructor') && !$user->hasRole('admin')) {
+            $query->where('instructor_id', $user->id);
+        }
+        
+        $totalCourses = $query->count();
+        $publishedCourses = $query->where('is_published', true)->count();
+        
+        // Get enrollments for all courses (or instructor's courses if instructor_id exists)
+        $courseIds = $query->pluck('id');
+        $totalEnrollments = Enrollment::whereIn('course_id', $courseIds)->count();
+        $activeEnrollments = Enrollment::whereIn('course_id', $courseIds)->whereNull('completed_at')->count();
+        
+        // Get modules and quizzes statistics
+        $totalModules = Module::whereIn('course_id', $courseIds)->count();
+        
+        // Get quizzes count - need to join through lessons and modules
+        $totalQuizzes = Quiz::whereHas('lesson.module', function($q) use ($courseIds) {
+            $q->whereIn('course_id', $courseIds);
+        })->count();
+        
+        $totalStudents = User::whereHas('roles', function($query) {
+            $query->where('name', 'student');
+        })->count();
+
+        // Get recent courses
+        $recentCourses = Course::with('modules.lessons')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Get enrollment statistics by level
+        $enrollmentsByLevel = Course::selectRaw('courses.level, COUNT(enrollments.id) as enrollment_count')
+            ->leftJoin('enrollments', 'courses.id', '=', 'enrollments.course_id')
+            ->groupBy('courses.level')
+            ->get();
+
+        // Calculate course performance metrics
+        $baseQuery = Course::query();
+        $highPerformanceCourses = $baseQuery->whereHas('enrollments', function($q) {
+            $q->whereRaw('(SELECT COUNT(*) FROM enrollments e2 WHERE e2.course_id = enrollments.course_id AND e2.completed_at IS NOT NULL) / (SELECT COUNT(*) FROM enrollments e3 WHERE e3.course_id = enrollments.course_id) >= 0.8');
+        })->count();
+        
+        $mediumPerformanceCourses = Course::whereHas('enrollments', function($q) {
+            $q->whereRaw('(SELECT COUNT(*) FROM enrollments e2 WHERE e2.course_id = enrollments.course_id AND e2.completed_at IS NOT NULL) / (SELECT COUNT(*) FROM enrollments e3 WHERE e3.course_id = enrollments.course_id) BETWEEN 0.5 AND 0.79');
+        })->count();
+        
+        $lowPerformanceCourses = Course::whereHas('enrollments', function($q) {
+            $q->whereRaw('(SELECT COUNT(*) FROM enrollments e2 WHERE e2.course_id = enrollments.course_id AND e2.completed_at IS NOT NULL) / (SELECT COUNT(*) FROM enrollments e3 WHERE e3.course_id = enrollments.course_id) < 0.5');
+        })->count();
+
+        return view('dashboard.instructor', compact(
+            'totalCourses',
+            'publishedCourses',
+            'totalEnrollments',
+            'activeEnrollments',
+            'totalModules',
+            'totalQuizzes',
+            'totalStudents',
+            'recentCourses',
+            'enrollmentsByLevel',
+            'highPerformanceCourses',
+            'mediumPerformanceCourses',
+            'lowPerformanceCourses'
+        ));
+    }
+
+    /**
+     * Display the dashboard for admins
+     */
+    public function admin()
+    {
+        // Get platform-wide statistics
         $totalCourses = Course::count();
         $publishedCourses = Course::where('is_published', true)->count();
         $totalEnrollments = Enrollment::count();
@@ -200,19 +275,33 @@ class DashboardController extends Controller
             $query->where('name', 'student');
         })->count();
 
-        // Get recent courses
-        $recentCourses = Course::with('modules.lessons')
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-
-        // Get enrollment statistics by level
-        $enrollmentsByLevel = Course::selectRaw('level, COUNT(enrollments.id) as enrollment_count')
-            ->leftJoin('enrollments', 'courses.id', '=', 'enrollments.course_id')
+        // Get courses by level
+        $coursesByLevel = Course::selectRaw('level, COUNT(*) as count')
             ->groupBy('level')
-            ->get();
+            ->pluck('count', 'level')
+            ->toArray();
 
-        return view('dashboard.instructor', compact(
+        // Get recent platform activity
+        $recentActivity = collect();
+        
+        // Recent enrollments
+        $recentEnrollments = Enrollment::with(['user', 'course'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function($enrollment) {
+                return [
+                    'description' => 'Enrolled in course',
+                    'user_name' => $enrollment->user->name,
+                    'course_title' => $enrollment->course->title,
+                    'type' => 'enrollment',
+                    'created_at' => $enrollment->created_at->format('M d, Y')
+                ];
+            });
+        
+        $recentActivity = $recentActivity->merge($recentEnrollments);
+
+        return view('dashboard.admin', compact(
             'totalCourses',
             'publishedCourses',
             'totalEnrollments',
@@ -220,8 +309,8 @@ class DashboardController extends Controller
             'totalModules',
             'totalQuizzes',
             'totalStudents',
-            'recentCourses',
-            'enrollmentsByLevel'
+            'coursesByLevel',
+            'recentActivity'
         ));
     }
 
@@ -232,7 +321,9 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        if ($user->hasRole('admin') || $user->hasRole('instructor')) {
+        if ($user->hasRole('admin')) {
+            return $this->admin();
+        } elseif ($user->hasRole('instructor')) {
             return $this->instructor();
         }
         

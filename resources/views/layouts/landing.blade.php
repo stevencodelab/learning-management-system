@@ -48,12 +48,13 @@
                 <nav class="main_nav_container">
                     <div class="main_nav">
                         <ul class="main_nav_list">
-                            <li class="main_nav_item"><a href="#home">Home</a></li>
-                            <li class="main_nav_item"><a href="#courses">Courses</a></li>
-                            <li class="main_nav_item"><a href="#teachers">Teachers</a></li>
-                            <li class="main_nav_item"><a href="#services">Services</a></li>
-                            <li class="main_nav_item"><a href="#testimonials">Testimonials</a></li>
-                            <li class="main_nav_item"><a href="#contact">Contact</a></li>
+                            <li class="main_nav_item"><a href="{{ route('welcome') }}">Home</a></li>
+                            <li class="main_nav_item"><a href="{{ route('landing.courses') }}">Courses</a></li>
+                            <li class="main_nav_item"><a href="{{ route('landing.quizzes') }}">Quizzes</a></li>
+                            <li class="main_nav_item"><a href="{{ route('landing.teachers') }}">Teachers</a></li>
+                            <!-- <li class="main_nav_item"><a href="{{ route('welcome') }}#services">Services</a></li> -->
+                            <li class="main_nav_item"><a href="{{ route('testimonials.index') }}">Testimonials</a></li>
+                            <li class="main_nav_item"><a href="{{ route('welcome') }}#contact">Contact</a></li>
                         </ul>
                     </div>
                 </nav>
@@ -69,44 +70,7 @@
                 @endif
             @endauth
             </div>
-            
-            <!-- Hamburger -->
-            <div class="hamburger_container">
-                <i class="fas fa-bars trans_200"></i>
-            </div>
         </header>
-        
-        <!-- Menu (Mobile) -->
-        <div class="menu_container menu_mm">
-            <div class="menu_close_container">
-                <div class="menu_close"></div>
-            </div>
-            
-            <div class="menu_inner menu_mm">
-                <div class="menu menu_mm">
-                    <ul class="menu_list menu_mm">
-                        <li class="menu_item menu_mm"><a href="#home">Home</a></li>
-                        <li class="menu_item menu_mm"><a href="#courses">Courses</a></li>
-                        <li class="menu_item menu_mm"><a href="#teachers">Teachers</a></li>
-                        <li class="menu_item menu_mm"><a href="#services">Services</a></li>
-                        <li class="menu_item menu_mm"><a href="#testimonials">Testimonials</a></li>
-                        <li class="menu_item menu_mm"><a href="#contact">Contact</a></li>
-                    </ul>
-                    
-                    <div class="menu_social_container menu_mm">
-                        <ul class="menu_social menu_mm">
-                            <li class="menu_social_item menu_mm"><a href="#"><i class="fab fa-pinterest"></i></a></li>
-                            <li class="menu_social_item menu_mm"><a href="#"><i class="fab fa-linkedin-in"></i></a></li>
-                            <li class="menu_social_item menu_mm"><a href="#"><i class="fab fa-instagram"></i></a></li>
-                            <li class="menu_social_item menu_mm"><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-                            <li class="menu_social_item menu_mm"><a href="#"><i class="fab fa-twitter"></i></a></li>
-                        </ul>
-                    </div>
-                    
-                    <div class="menu_copyright menu_mm">Smart Edu © 2024 All rights reserved</div>
-                </div>
-            </div>
-        </div>
         
         <!-- Main Content -->
         @yield('content')
@@ -157,11 +121,12 @@
                             <div class="footer_column_title">Menu</div>
                             <div class="footer_column_content">
                                 <ul>
-                                    <li class="footer_list_item"><a href="#home">Home</a></li>
-                                    <li class="footer_list_item"><a href="#courses">Courses</a></li>
-                                    <li class="footer_list_item"><a href="#teachers">Teachers</a></li>
-                                    <li class="footer_list_item"><a href="#services">Services</a></li>
-                                    <li class="footer_list_item"><a href="#contact">Contact</a></li>
+                                    <li class="footer_list_item"><a href="{{ route('welcome') }}#home">Home</a></li>
+                                    <li class="footer_list_item"><a href="{{ route('landing.courses') }}">Courses</a></li>
+                                    <li class="footer_list_item"><a href="{{ route('landing.quizzes') }}">Quizzes</a></li>
+                                    <li class="footer_list_item"><a href="{{ route('welcome') }}#teachers">Teachers</a></li>
+                                    <!-- <li class="footer_list_item"><a href="{{ route('welcome') }}#services">Services</a></li> -->
+                                    <li class="footer_list_item"><a href="{{ route('welcome') }}#contact">Contact</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -226,7 +191,6 @@
                 </div>
             </div>
         </footer>
-        
     </div>
     
     <!-- Scripts -->

@@ -20,6 +20,7 @@ class Course extends Model
         'price',
         'is_published',
         'duration_hours',
+        'instructor_id',
     ];
 
     protected $casts = [
@@ -67,6 +68,16 @@ class Course extends Model
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function instructor()
+    {
+        return $this->belongsTo(User::class, 'instructor_id');
+    }
+
+    public function testimonials()
+    {
+        return $this->hasMany(Testimonial::class);
     }
 
     // Accessor for lessons count

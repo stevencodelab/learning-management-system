@@ -78,6 +78,16 @@ class Quiz extends Model
         return $this->belongsTo(Lesson::class);
     }
 
+    public function getCourseAttribute()
+    {
+        return $this->lesson->module->course ?? null;
+    }
+    
+    public function getQuestionsCountAttribute()
+    {
+        return $this->questions()->count();
+    }
+
     public function questions()
     {
         return $this->hasMany(QuizQuestion::class)->orderBy('order');

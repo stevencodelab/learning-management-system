@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\Storage;
             </div>
             <div class="col-12 col-xl-4">
                 <div class="justify-content-end d-flex">
-                    @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                    @if(auth()->check() && (auth()->user()->hasRole('admin') || auth()->user()->hasRole('instructor')))
                         <a href="{{ route('courses.edit', $course) }}" class="btn btn-primary mr-2">
                             <i class="icon-pencil"></i> Edit
                         </a>
@@ -135,7 +135,7 @@ use Illuminate\Support\Facades\Storage;
                     <h4 class="card-title mb-0">
                         <i class="icon-folder text-primary"></i> Course Modules ({{ $course->modules->count() }})
                     </h4>
-                    @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                    @if(auth()->check() && (auth()->user()->hasRole('admin') || auth()->user()->hasRole('instructor')))
                         <a href="{{ route('modules.create', $course) }}" class="btn btn-sm btn-primary">
                             <i class="icon-plus"></i> Add Module
                         </a>
@@ -185,7 +185,7 @@ use Illuminate\Support\Facades\Storage;
                                             </div>
                                         @endif
                                     </div>
-                                    @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+                                    @if(auth()->check() && (auth()->user()->hasRole('admin') || auth()->user()->hasRole('instructor')))
                                         <div class="ml-3">
                                             <a href="{{ route('modules.edit', $module) }}" class="btn btn-sm btn-primary">
                                                 <i class="icon-pencil"></i>
@@ -202,6 +202,11 @@ use Illuminate\Support\Facades\Storage;
                         <i class="icon-folder" style="font-size: 64px; color: #e3e6f0;"></i>
                         <h5 class="mt-3 mb-2 text-muted">No modules yet</h5>
                         <p class="text-muted">Add modules to organize course content</p>
+                        @if(auth()->check() && (auth()->user()->hasRole('admin') || auth()->user()->hasRole('instructor')))
+                            <a href="{{ route('modules.create', $course) }}" class="btn btn-primary">
+                                <i class="icon-plus"></i> Add First Module
+                            </a>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -306,7 +311,7 @@ use Illuminate\Support\Facades\Storage;
             </div>
         @endif
         
-        @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
+        @if(auth()->check() && (auth()->user()->hasRole('admin') || auth()->user()->hasRole('instructor')))
             <!-- Admin/Instructor Actions -->
             <div class="card sticky-top" style="top: 20px;">
                 <div class="card-body">

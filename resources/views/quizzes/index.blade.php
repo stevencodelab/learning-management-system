@@ -17,17 +17,17 @@
                 <div class="justify-content-end d-flex">
                     @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
                         @if(isset($lessons) && $lessons && $lessons->count() > 0)
-                            <a href="{{ url('/lessons/' . $lessons->first()->id . '/quizzes/create') }}" class="btn btn-primary mr-2">
-                                <i class="icon-plus"></i> Create Quiz
+                            <a href="{{ url('/lessons/' . $lessons->first()->id . '/quizzes/create') }}" class="btn btn-primary mr-3">
+                                <i class="mdi mdi-plus"></i> Create Quiz
                             </a>
                         @else
-                            <button type="button" class="btn btn-primary mr-2" disabled title="No lessons available">
-                                <i class="icon-plus"></i> Create Quiz
+                            <button type="button" class="btn btn-primary mr-3" disabled title="No lessons available">
+                                <i class="mdi mdi-plus"></i> Create Quiz
                             </button>
                         @endif
                     @endif
-                    <a href="{{ route('quizzes.index') }}" class="btn btn-secondary">
-                        <i class="icon-refresh"></i> Refresh
+                    <a href="{{ route('quizzes.index') }}" class="btn btn-secondary ml-3">
+                        <i class="mdi mdi-refresh"></i> Refresh
                     </a>
                 </div>
             </div>
@@ -165,13 +165,13 @@
                                         <a href="{{ $quiz->url }}" 
                                            class="btn btn-info" 
                                            title="View Details">
-                                            <i class="icon-eye"></i>
+                                            <i class="mdi mdi-eye"></i>
                                         </a>
                                         @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
                                             <a href="{{ route('quizzes.edit', $quiz) }}" 
                                                class="btn btn-primary" 
                                                title="Edit">
-                                                <i class="icon-pencil"></i>
+                                                <i class="mdi mdi-pencil"></i>
                                             </a>
                                             <a href="{{ route('quiz.questions.index', $quiz) }}" 
                                                class="btn btn-warning" 
@@ -182,7 +182,7 @@
                                                     class="btn btn-danger" 
                                                     onclick="confirmDelete('{{ route('quizzes.destroy', $quiz) }}')" 
                                                     title="Delete">
-                                                <i class="icon-trash"></i>
+                                                <i class="mdi mdi-delete"></i>
                                             </button>
                                         @elseif(auth()->check() && !auth()->user()->hasAnyRole(['admin', 'instructor']))
                                             @if($quiz->isAvailable() && $quiz->canUserAttempt(auth()->id()))

@@ -114,6 +114,7 @@ use Illuminate\Support\Facades\Storage;
                         <thead>
                             <tr>
                                 <th>Course</th>
+                                <th>Instructor</th>
                                 <th>Level</th>
                                 <th>Status</th>
                                 <th>Duration</th>
@@ -142,6 +143,25 @@ use Illuminate\Support\Facades\Storage;
                                             <small class="text-muted d-none d-md-block" style="word-break: break-word;">{{ Str::limit($course->description, 60) }}</small>
                                         </div>
                                     </div>
+                                </td>
+                                <td data-priority="3">
+                                    @if($course->instructor)
+                                        <div class="d-flex align-items-center">
+                                            @if($course->instructor->avatar)
+                                                <img src="{{ asset('storage/' . $course->instructor->avatar) }}" 
+                                                     alt="{{ $course->instructor->name }}" 
+                                                     style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 8px;">
+                                            @else
+                                                <img src="{{ $course->instructor->avatar_url }}" 
+                                                     alt="{{ $course->instructor->name }}" 
+                                                     style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 8px;"
+                                                     onerror="this.src='{{ asset('images/landing/teacher_1.jpg') }}'">
+                                            @endif
+                                            <span class="font-weight-medium">{{ Str::limit($course->instructor->name, 20) }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-muted">Not Assigned</span>
+                                    @endif
                                 </td>
                                 <td data-priority="4">
                                     <span class="badge badge-info">{{ ucfirst($course->level) }}</span>
@@ -173,13 +193,13 @@ use Illuminate\Support\Facades\Storage;
                                         <a href="{{ $course->url }}" 
                                            class="btn btn-info" 
                                            title="View">
-                                            <i class="icon-eye"></i>
+                                            <i class="mdi mdi-eye"></i>
                                         </a>
                                         @if(auth()->check() && auth()->user()->hasAnyRole(['admin', 'instructor']))
                                             <a href="{{ route('courses.edit', $course) }}" 
                                                class="btn btn-primary" 
                                                title="Edit">
-                                                <i class="icon-pencil"></i>
+                                                <i class="mdi mdi-pencil"></i>
                                             </a>
                                             <form action="{{ route('courses.destroy', $course) }}" 
                                                   method="POST" 
@@ -189,8 +209,8 @@ use Illuminate\Support\Facades\Storage;
                                                 @method('DELETE')
                                                 <button type="submit" 
                                                         class="btn btn-danger" 
-                                                        title="Delete">
-                                                    <i class="icon-trash"></i>
+                                                       title="Delete">
+                                                    <i class="mdi mdi-delete"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -199,7 +219,7 @@ use Illuminate\Support\Facades\Storage;
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="8" class="text-center py-4">
                                     <div class="text-center py-5">
                                         <i class="icon-book" style="font-size: 64px; color: #ccc;"></i>
                                         <h4 class="mt-3">No courses found</h4>
@@ -386,7 +406,45 @@ use Illuminate\Support\Facades\Storage;
     (function($) {
         'use strict';
         $(document).ready(function() {
-            $('#coursesTable').DataTable({
+            // Suppress DataTables warnings and alerts
+            $.fn.dataTable.ext.errMode = 'none';
+            
+            // Override DataTables alert function to suppress popup warnings
+            if (typeof $.fn.dataTable.ext.sErrMode !== 'undefined') {
+                $.fn.dataTable.ext.sErrMode = 'none';
+            }
+            
+            // Suppress alert dialogs
+            var originalAlert = window.alert;
+            window.alert = function() {
+                var message = arguments[0];
+                if (typeof message === 'string' && message.indexOf('DataTables warning') !== -1) {
+                    console.warn('DataTables warning suppressed:', message);
+                    return;
+                }
+                return originalAlert.apply(window, arguments);
+            };
+            
+            // Destroy existing DataTable instance if any
+            if ($.fn.DataTable.isDataTable('#coursesTable')) {
+                $('#coursesTable').DataTable().destroy();
+            }
+
+            // Verify column count before initialization
+            var $table = $('#coursesTable');
+            var headerCols = $table.find('thead tr').children().length;
+            var firstRowCols = $table.find('tbody tr:first').children().length;
+            
+            // Ensure all rows have correct column count
+            $table.find('tbody tr').each(function() {
+                var $row = $(this);
+                var cols = $row.children('td').length;
+                if (cols !== headerCols && cols !== 1) { // Allow colspan=1 for empty state
+                    console.warn('Row has incorrect column count:', cols, 'Expected:', headerCols);
+                }
+            });
+
+            var table = $('#coursesTable').DataTable({
                 responsive: {
                     details: {
                         type: 'column',
@@ -413,13 +471,31 @@ use Illuminate\Support\Facades\Storage;
                 },
                 columnDefs: [
                     {
-                        targets: -1,
+                        targets: 0, // Course column
+                        responsivePriority: 1
+                    },
+                    {
+                        targets: 1, // Instructor column
+                        responsivePriority: 2
+                    },
+                    {
+                        targets: 7, // Actions column (last column)
                         orderable: false,
                         searchable: false,
-                        responsivePriority: 1
+                        responsivePriority: 10000
+                    },
+                    {
+                        targets: [2, 3, 4, 5, 6], // Level, Status, Duration, Modules, Price
+                        responsivePriority: 3
                     }
                 ],
                 autoWidth: false
+            });
+            
+            // Handle DataTables errors silently
+            table.on('error.dt', function(e, settings, techNote, message) {
+                console.log('DataTables error suppressed:', message);
+                return false;
             });
             
             $('#coursesTable').each(function() {

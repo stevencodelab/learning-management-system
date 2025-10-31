@@ -5,8 +5,17 @@
     <div class="col-md-12 grid-margin">
         <div class="row">
             <div class="col-12 col-xl-8 mb-4 mb-xl-0">
-                <h3 class="font-weight-bold">Welcome {{ auth()->user()->name }}</h3>
-                <h6 class="font-weight-normal mb-0">All systems are running smoothly! You have <span class="text-primary">new courses!</span></h6>
+                <div class="d-flex align-items-center">
+                    <div class="dashboard-avatar mr-3">
+                        <img src="{{ auth()->user()->avatar_url }}" 
+                             alt="Avatar" 
+                             class="dashboard-avatar-image">
+                    </div>
+                    <div>
+                        <h3 class="font-weight-bold mb-1">Welcome {{ auth()->user()->name }}</h3>
+                        <h6 class="font-weight-normal mb-0">All systems are running smoothly! You have <span class="text-primary">new courses!</span></h6>
+                    </div>
+                </div>
             </div>
             <div class="col-12 col-xl-4">
                 <div class="justify-content-end d-flex">
@@ -290,5 +299,28 @@
         });
     }
 </script>
+@endpush
+@endsection
+
+@push('styles')
+<style>
+    .dashboard-avatar-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #e3e6f0;
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-avatar-image:hover {
+        border-color: #667eea;
+        transform: scale(1.05);
+    }
+    
+    .dashboard-avatar {
+        position: relative;
+    }
+</style>
 @endpush
 @endsection

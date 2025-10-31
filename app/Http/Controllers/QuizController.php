@@ -106,6 +106,17 @@ class QuizController extends Controller
     }
 
     /**
+     * Display the public detail page for quiz
+     */
+    public function detail(Quiz $quiz, $slug = null)
+    {
+        // Load quiz with all relationships
+        $quiz->load(['lesson.module.course', 'questions']);
+        
+        return view('quizzes.detail', compact('quiz'));
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(Quiz $quiz, $slug = null)

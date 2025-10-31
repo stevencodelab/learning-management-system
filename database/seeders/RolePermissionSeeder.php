@@ -56,6 +56,12 @@ class RolePermissionSeeder extends Seeder
             'edit users',
             'delete users',
             
+            // Student permissions
+            'view students',
+            'create students',
+            'edit students',
+            'delete students',
+            
             // Dashboard permissions
             'view dashboard',
             'view instructor dashboard',
@@ -71,14 +77,14 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Create roles and assign permissions
-        $adminRole = Role::create(['name' => 'admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $adminRole->givePermissionTo(Permission::all());
 
-        $instructorRole = Role::create(['name' => 'instructor']);
+        $instructorRole = Role::firstOrCreate(['name' => 'instructor']);
         $instructorRole->givePermissionTo([
             'view courses',
             'create courses',
@@ -98,11 +104,15 @@ class RolePermissionSeeder extends Seeder
             'edit quizzes',
             'delete quizzes',
             'view enrollments',
+            'view students',
+            'create students',
+            'edit students',
+            'delete students',
             'view dashboard',
             'view instructor dashboard',
         ]);
 
-        $studentRole = Role::create(['name' => 'student']);
+        $studentRole = Role::firstOrCreate(['name' => 'student']);
         $studentRole->givePermissionTo([
             'view courses',
             'view modules',

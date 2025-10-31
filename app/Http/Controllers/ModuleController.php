@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Module;
 use App\Models\Course;
+use App\Http\Requests\ModuleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -56,16 +57,9 @@ class ModuleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Course $course): RedirectResponse
+    public function store(ModuleRequest $request, Course $course): RedirectResponse
     {
-        $this->checkManagePermission();
-        
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'order' => 'required|integer|min:1',
-        ]);
-
+        $validated = $request->validated();
         $validated['course_id'] = $course->id;
 
         Module::create($validated);
@@ -102,16 +96,9 @@ class ModuleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Module $module): RedirectResponse
+    public function update(ModuleRequest $request, Module $module): RedirectResponse
     {
-        $this->checkManagePermission();
-        
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'order' => 'required|integer|min:1',
-        ]);
-
+        $validated = $request->validated();
         $module->update($validated);
 
         return redirect()
